@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">{{ owner.name }}</h1>
+        <p class="hero-subtitle">{{ owner.title }}</p>
+        <p class="hero-location">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ owner.location }}
+        </p>
+        <p class="hero-description">
+            Passionate about reinforced concrete design, structural safety, and integrating 
+            modern technology into civil engineering practice. Building digital tools that 
+            simplify structural calculations and improve construction standards across Africa.
+        </p>
+        <a href="{{ url_for('calculator') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-calculator"></i>
+            Start Structural Design
+        </a>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">What I Offer</h2>
+            <p class="section-subtitle">
+                Combining structural engineering expertise with software development 
+                to deliver innovative solutions for the construction industry.
+            </p>
+        </div>
+        
+        <div class="vision-grid">
+            <!-- Feature 1 -->
+            <div class="vision-card">
+                <div class="vision-card-icon">📐</div>
+                <h3>Structural Design</h3>
+                <p>
+                    Professional structural analysis and design services for reinforced 
+                    concrete structures, following BS 8110 and Eurocode 2 standards.
+                </p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="vision-card">
+                <div class="vision-card-icon">💻</div>
+                <h3>Engineering Software</h3>
+                <p>
+                    Developing intelligent engineering applications that automate 
+                    complex calculations and improve design efficiency.
+                </p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="vision-card">
+                <div class="vision-card-icon">🏗️</div>
+                <h3>Infrastructure Safety</h3>
+                <p>
+                    Committed to promoting safe construction practices and ensuring 
+                    structural integrity in every project.
+                </p>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="vision-card">
+                <div class="vision-card-icon">📊</div>
+                <h3>Online Calculator</h3>
+                <p>
+                    Free access to professional structural calculators for one-way 
+                    slab design and other structural elements.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="section" style="background-color: var(--light-blue);">
+    <div class="container text-center">
+        <h2 class="section-title">Ready to Start Your Project?</h2>
+        <p class="section-subtitle mb-4">
+            Use our professional structural calculator to begin your design process, 
+            or get in touch to discuss your engineering needs.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('calculator') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-calculator"></i>
+                Try the Calculator
+            </a>
+            <a href="mailto:{{ owner.email }}" class="btn btn-outline btn-lg" style="color: var(--primary-blue); border-color: var(--primary-blue);">
+                <i class="fas fa-envelope"></i>
+                Get in Touch
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Standards Section -->
+<section class="section">
+    <div class="container">
+        <div class="standards-section">
+            <h3><i class="fas fa-book"></i> Design Standards & Codes</h3>
+            <p style="margin-bottom: 2rem; opacity: 0.9;">
+                All calculations and designs comply with internationally recognized standards
+            </p>
+            <div class="standards-grid">
+                <div class="standard-item">
+                    <div class="standard-code">BS 8110</div>
+                    <div class="standard-name">British Standard</div>
+                </div>
+                <div class="standard-item">
+                    <div class="standard-code">EC 2</div>
+                    <div class="standard-name">Eurocode 2</div>
+                </div>
+                <div class="standard-item">
+                    <div class="standard-code">ACI 318</div>
+                    <div class="standard-name">American Standard</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

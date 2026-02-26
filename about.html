@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<!-- About Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">About Me</h2>
+            <p class="section-subtitle">
+                Get to know more about my journey, passion, and commitment to structural engineering excellence.
+            </p>
+        </div>
+        
+        <div class="about-grid">
+            <!-- Profile Image -->
+            <div class="profile-image-container">
+                <img 
+                    src="{{ url_for('static', filename='images/aliyu.jpg') }}" 
+                    alt="{{ owner.name }}" 
+                    class="profile-image"
+                    onerror="this.src='https://via.placeholder.com/400x400/1e3a5f/ffffff?text=Aliyu+Bashir+Nasir'"
+                >
+                <div class="profile-badge">
+                    <i class="fas fa-graduation-cap"></i> Civil Engineering Student
+                </div>
+            </div>
+            
+            <!-- About Content -->
+            <div class="about-content">
+                <h2>{{ owner.name }}</h2>
+                <p style="font-size: 1.125rem; color: var(--accent-blue); font-weight: 600;">
+                    {{ owner.title }}
+                </p>
+                <p>
+                    <i class="fas fa-map-marker-alt" style="color: var(--accent-blue);"></i> 
+                    {{ owner.location }}
+                </p>
+                
+                <div class="highlight-box">
+                    <p>
+                        "My mission is to develop intelligent engineering software that simplifies 
+                        structural calculations and improves construction standards in Nigeria and across Africa."
+                    </p>
+                </div>
+                
+                <h3>Professional Biography</h3>
+                <p>
+                    I am a Civil Engineering student with a strong focus on Structural Engineering and 
+                    infrastructure development. My academic journey has equipped me with a solid foundation 
+                    in engineering principles, while my passion for technology drives me to explore innovative 
+                    solutions in the field.
+                </p>
+                <p>
+                    My primary areas of interest include reinforced concrete design, structural safety analysis, 
+                    and the integration of modern technology into civil engineering practice. I believe that 
+                    the future of engineering lies in the seamless combination of traditional engineering 
+                    knowledge with cutting-edge digital tools.
+                </p>
+                
+                <h3>Areas of Focus</h3>
+                <div class="skills-list">
+                    <div class="skill-item">
+                        <i class="fas fa-building skill-icon"></i>
+                        <span>Reinforced Concrete Design</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-shield-alt skill-icon"></i>
+                        <span>Structural Safety Analysis</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-laptop-code skill-icon"></i>
+                        <span>Engineering Software Development</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-drafting-compass skill-icon"></i>
+                        <span>Structural Calculations</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-book skill-icon"></i>
+                        <span>BS 8110 & Eurocode 2</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-globe-africa skill-icon"></i>
+                        <span>African Infrastructure Development</span>
+                    </div>
+                </div>
+                
+                <h3>My Journey</h3>
+                <p>
+                    Growing up in Nigeria, I witnessed firsthand the critical need for robust infrastructure 
+                    and the importance of structural safety in our communities. This experience ignited my 
+                    passion for civil engineering and my commitment to contributing meaningfully to the 
+                    development of safe, sustainable structures across Africa.
+                </p>
+                <p>
+                    As I progress in my engineering education, I am equally invested in developing software 
+                    solutions that can make structural engineering more accessible and efficient. My vision 
+                    is to create tools that empower engineers to perform complex calculations with ease, 
+                    ultimately leading to safer and more reliable structures.
+                </p>
+                
+                <div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, var(--light-blue), var(--white));">
+                    <div class="card-header">
+                        <h4 class="card-title"><i class="fas fa-bullseye" style="color: var(--accent-blue);"></i> Career Goals</h4>
+                    </div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--light-grey);">
+                            <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 0.5rem;"></i>
+                            Become a licensed structural engineer
+                        </li>
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--light-grey);">
+                            <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 0.5rem;"></i>
+                            Develop comprehensive structural engineering software suite
+                        </li>
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--light-grey);">
+                            <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 0.5rem;"></i>
+                            Contribute to major infrastructure projects in Nigeria
+                        </li>
+                        <li style="padding: 0.5rem 0;">
+                            <i class="fas fa-check-circle" style="color: var(--success-green); margin-right: 0.5rem;"></i>
+                            Promote engineering education and mentorship in Africa
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

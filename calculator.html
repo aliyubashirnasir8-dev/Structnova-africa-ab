@@ -1,0 +1,514 @@
+{% extends "base.html" %}
+
+{% block title %}One-Way Slab Calculator{% endblock %}
+
+{% block content %}
+<!-- Calculator Hero -->
+<section class="hero" style="padding: 3rem 2rem;">
+    <div class="hero-content">
+        <h2 class="hero-title" style="font-size: 2.5rem;">
+            <i class="fas fa-calculator"></i> One-Way Slab Design Calculator
+        </h2>
+        <p class="hero-description">
+            Professional structural calculator for reinforced concrete one-way slab design. 
+            Based on BS 8110 and Eurocode 2 principles.
+        </p>
+    </div>
+</section>
+
+<!-- Calculator Section -->
+<section class="section">
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <div class="calculator-container">
+            <!-- Input Form -->
+            <div class="calculator-form">
+                <div class="card-header" style="margin-bottom: 1.5rem;">
+                    <h3 class="card-title">
+                        <i class="fas fa-sliders-h" style="color: var(--accent-blue);"></i>
+                        Input Parameters
+                    </h3>
+                    <p class="card-subtitle">Enter slab design parameters</p>
+                </div>
+                
+                <form method="POST" action="{{ url_for('calculator') }}">
+                    <!-- Span Input -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Span (L)
+                            <span>- Length of the slab in meters</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            name="span" 
+                            class="form-input" 
+                            placeholder="e.g., 4.5"
+                            step="0.1"
+                            min="0.1"
+                            max="12"
+                            value="{% if results %}{{ results.span }}{% endif %}"
+                            required
+                        >
+                        <p class="form-hint">Typical range: 2m to 8m for one-way slabs</p>
+                    </div>
+                    
+                    <!-- Load Inputs -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Dead Load (G)
+                                <span>- kN/m²</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                name="dead_load" 
+                                class="form-input" 
+                                placeholder="e.g., 5.0"
+                                step="0.1"
+                                min="0"
+                                max="50"
+                                value="{% if results %}{{ results.dead_load }}{% endif %}"
+                                required
+                            >
+                            <p class="form-hint">Self-weight + finishes</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Live Load (Q)
+                                <span>- kN/m²</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                name="live_load" 
+                                class="form-input" 
+                                placeholder="e.g., 3.0"
+                                step="0.1"
+                                min="0"
+                                max="20"
+                                value="{% if results %}{{ results.live_load }}{% endif %}"
+                                required
+                            >
+                            <p class="form-hint">Occupancy load (1.5-5.0)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Material Grades -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Concrete Grade</label>
+                            <select name="concrete_grade" class="form-select" required>
+                                {% for grade in concrete_grades %}
+                                    <option value="{{ grade }}" {% if results and results.concrete_grade == grade %}selected{% endif %}>
+                                        {{ grade }} (fck = {{ 
+                                            {'C20': 20, 'C25': 25, 'C30': 30, 'C35': 35, 'C40': 40}[grade] 
+                                        }} MPa)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint">Characteristic strength</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Steel Grade</label>
+                            <select name="steel_grade" class="form-select" required>
+                                {% for grade in steel_grades %}
+                                    <option value="{{ grade }}" {% if results and results.steel_grade == grade %}selected{% endif %}>
+                                        {{ grade }} MPa
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <p class="form-hint">Yield strength (fy)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Cover Input -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            Concrete Cover
+                            <span>- mm</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            name="cover" 
+                            class="form-input" 
+                            placeholder="e.g., 25"
+                            step="5"
+                            min="15"
+                            max="75"
+                            value="{% if results %}{{ results.cover }}{% else %}25{% endif %}"
+                            required
+                        >
+                        <p class="form-hint">Minimum cover to reinforcement (typically 20-35mm)</p>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                        <i class="fas fa-calculator"></i>
+                        Calculate Design
+                    </button>
+                </form>
+                
+                <!-- Reference Info -->
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--light-grey);">
+                    <h4 style="font-size: 0.875rem; color: var(--medium-grey); margin-bottom: 0.75rem;">
+                        <i class="fas fa-info-circle"></i> Design Standards
+                    </h4>
+                    <p style="font-size: 0.75rem; color: var(--medium-grey); margin: 0;">
+                        Calculations based on BS 8110-1:1997 and Eurocode 2 (EN 1992-1-1) 
+                        for reinforced concrete structures.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            {% if results %}
+            <div class="results-container">
+                <div class="results-header">
+                    <h3>
+                        <i class="fas fa-clipboard-check"></i>
+                        Calculation Results
+                    </h3>
+                </div>
+                
+                <div class="results-body">
+                    <!-- Input Summary -->
+                    <div class="result-section">
+                        <h4 class="result-section-title">Input Summary</h4>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Span (L)</div>
+                                <div class="result-value">{{ results.span }} m</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Dead Load (G)</div>
+                                <div class="result-value">{{ results.dead_load }} kN/m²</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Live Load (Q)</div>
+                                <div class="result-value">{{ results.live_load }} kN/m²</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Concrete Grade</div>
+                                <div class="result-value">{{ results.concrete_grade }}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Steel Grade</div>
+                                <div class="result-value">{{ results.steel_grade }} MPa</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Cover</div>
+                                <div class="result-value">{{ results.cover }} mm</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Load Calculations -->
+                    <div class="result-section">
+                        <h4 class="result-section-title">Load Analysis</h4>
+                        <div class="calculation-steps">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">Load Combination (BS 8110: 1.4G + 1.6Q)</div>
+                                    <div class="step-calculation">
+                                        w = (1.4 × {{ results.dead_load }}) + (1.6 × {{ results.live_load }}) = {{ results.ultimate_load }} kN/m²
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">Maximum Bending Moment (Simply Supported: wL²/8)</div>
+                                    <div class="step-calculation">
+                                        M = ({{ results.ultimate_load }} × {{ results.span }}²) / 8 = {{ results.moment }} kNm/m
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Properties -->
+                    <div class="result-section">
+                        <h4 class="result-section-title">Section Properties</h4>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Assumed Slab Depth (h)</div>
+                                <div class="result-value">{{ results.slab_depth }} mm</div>
+                                <div class="result-formula">≈ Span/25</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Effective Depth (d)</div>
+                                <div class="result-value">{{ results.effective_depth }} mm</div>
+                                <div class="result-formula">d = h - cover - Ø/2</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Concrete Strength (fck)</div>
+                                <div class="result-value">{{ results.fck }} MPa</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Steel Yield Strength (fy)</div>
+                                <div class="result-value">{{ results.fy }} MPa</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reinforcement Design -->
+                    <div class="result-section">
+                        <h4 class="result-section-title">Reinforcement Design</h4>
+                        <div class="calculation-steps">
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <div class="step-title">Moment Resistance Factor (K)</div>
+                                    <div class="step-calculation">
+                                        K = M / (bd²fck) = {{ results.moment }}×10⁶ / (1000 × {{ results.effective_depth }}² × {{ results.fck }}) = {{ results.K }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <div class="step-title">Lever Arm (z)</div>
+                                    <div class="step-calculation">
+                                        z = d[0.5 + √(0.25 - K/1.134)] ≤ 0.95d = {{ results.lever_arm }} mm
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">5</div>
+                                <div class="step-content">
+                                    <div class="step-title">Required Steel Area (As,req)</div>
+                                    <div class="step-calculation">
+                                        As,req = M / (0.87 × fy × z) = {{ results.moment }}×10⁶ / (0.87 × {{ results.fy }} × {{ results.lever_arm }}) = {{ results.As_required }} mm²/m
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">6</div>
+                                <div class="step-content">
+                                    <div class="step-title">Minimum Steel Area (As,min)</div>
+                                    <div class="step-calculation">
+                                        As,min = 0.0013 × b × h = 0.0013 × 1000 × {{ results.slab_depth }} = {{ results.As_min }} mm²/m
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Reinforcement Suggestion -->
+                        <div class="reinforcement-highlight">
+                            <div class="result-label">RECOMMENDED REINFORCEMENT</div>
+                            <div class="result-value">{{ results.reinforcement_suggestion }}</div>
+                            <p style="margin-top: 0.5rem; font-size: 0.875rem; opacity: 0.9;">
+                                Provides {{ results.selected_reinforcement.As_actual }} mm²/m 
+                                ({{ "Adequate" if results.selected_reinforcement.adequate else "Review required" }})
+                            </p>
+                        </div>
+                        
+                        <!-- Alternative Options -->
+                        <div style="margin-top: 1rem;">
+                            <h5 style="font-size: 0.875rem; color: var(--medium-grey); margin-bottom: 0.5rem;">
+                                Alternative Reinforcement Options:
+                            </h5>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                {% for option in results.reinforcement_options %}
+                                    <span 
+                                        style="padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem;"
+                                        class="{% if option.adequate %}success{% else %}warning{% endif %}"
+                                        style="background-color: {% if option.adequate %}#c6f6d5{% else %}#feebc8{% endif %}; color: {% if option.adequate %}#22543d{% else %}#744210{% endif %};"
+                                    >
+                                        {{ option.bar_size }} @ {{ option.spacing }}mm 
+                                        ({{ option.As_actual }} mm²/m)
+                                        {% if option.adequate %}✓{% else %}⚠{% endif %}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Design Checks -->
+                    <div class="result-section">
+                        <h4 class="result-section-title">Design Checks</h4>
+                        
+                        <!-- Deflection Check -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <h5 style="font-size: 0.875rem; color: var(--primary-blue); margin-bottom: 0.75rem;">
+                                <i class="fas fa-arrows-alt-v"></i> Deflection Check
+                            </h5>
+                            <div class="result-grid" style="margin-bottom: 1rem;">
+                                <div class="result-item">
+                                    <div class="result-label">Basic Span/Depth Ratio</div>
+                                    <div class="result-value">{{ results.basic_span_depth_ratio }}</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Modification Factor</div>
+                                    <div class="result-value">{{ results.modification_factor }}</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Allowable L/d</div>
+                                    <div class="result-value">{{ results.allowable_span_depth }}</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Actual L/d</div>
+                                    <div class="result-value {% if results.deflection_ok %}success{% else %}error{% endif %}">
+                                        {{ results.actual_span_depth }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon {% if results.deflection_ok %}pass{% else %}fail{% endif %}">
+                                    {% if results.deflection_ok %}✓{% else %}✗{% endif %}
+                                </div>
+                                <span class="check-text">
+                                    Deflection {% if results.deflection_ok %}OK{% else %}EXCEEDED - Increase slab depth{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Shear Check -->
+                        <div>
+                            <h5 style="font-size: 0.875rem; color: var(--primary-blue); margin-bottom: 0.75rem;">
+                                <i class="fas fa-cut"></i> Shear Check (Simplified)
+                            </h5>
+                            <div class="result-grid" style="margin-bottom: 1rem;">
+                                <div class="result-item">
+                                    <div class="result-label">Design Shear Force (V)</div>
+                                    <div class="result-value">{{ results.shear_force }} kN/m</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Concrete Shear Strength (vc)</div>
+                                    <div class="result-value">{{ results.concrete_shear_strength }} MPa</div>
+                                </div>
+                            </div>
+                            <div class="check-item">
+                                <div class="check-icon {% if results.shear_ok %}pass{% else %}fail{% endif %}">
+                                    {% if results.shear_ok %}✓{% else %}✗{% endif %}
+                                </div>
+                                <span class="check-text">
+                                    Shear capacity {% if results.shear_ok %}adequate{% else %}insufficient - Check required{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Box -->
+                    <div class="result-section">
+                        <h4 class="result-section-title">Design Summary</h4>
+                        <div style="background-color: var(--light-blue); padding: 1.5rem; border-radius: var(--border-radius);">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div>
+                                    <div class="result-label">SLAB DEPTH</div>
+                                    <div class="result-value">{{ results.slab_depth }} mm</div>
+                                </div>
+                                <div>
+                                    <div class="result-label">MAIN REINFORCEMENT</div>
+                                    <div class="result-value">{{ results.reinforcement_suggestion }}</div>
+                                </div>
+                                <div>
+                                    <div class="result-label">DESIGN MOMENT</div>
+                                    <div class="result-value">{{ results.moment }} kNm/m</div>
+                                </div>
+                                <div>
+                                    <div class="result-label">STEEL AREA</div>
+                                    <div class="result-value">{{ results.As_provided }} mm²/m</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--medium-grey);">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Note:</strong> This calculator provides preliminary design values. 
+                            Final design should be verified by a qualified structural engineer and 
+                            checked for all limit states including crack control, fire resistance, 
+                            and durability requirements per BS 8110 or Eurocode 2.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Initial State -->
+            <div class="results-container">
+                <div class="results-header">
+                    <h3>
+                        <i class="fas fa-info-circle"></i>
+                        How to Use This Calculator
+                    </h3>
+                </div>
+                <div class="results-body">
+                    <div class="calculation-steps">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-title">Enter the Span</div>
+                                <p style="margin: 0; color: var(--medium-grey);">
+                                    Input the clear span of the slab in meters (typically 2-8m for one-way slabs).
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-title">Specify the Loads</div>
+                                <p style="margin: 0; color: var(--medium-grey);">
+                                    Enter dead load (self-weight + finishes) and live load (occupancy) in kN/m².
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-title">Select Material Grades</div>
+                                <p style="margin: 0; color: var(--medium-grey);">
+                                    Choose concrete grade (C20-C40) and steel grade (460 or 500 MPa).
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <div class="step-title">Set Concrete Cover</div>
+                                <p style="margin: 0; color: var(--medium-grey);">
+                                    Enter the nominal cover to reinforcement (typically 20-35mm for slabs).
+                                </p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <div class="step-title">Calculate</div>
+                                <p style="margin: 0; color: var(--medium-grey);">
+                                    Click "Calculate Design" to get complete slab design with step-by-step calculations.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background-color: var(--light-blue); padding: 1rem; border-radius: var(--border-radius); margin-top: 1.5rem;">
+                        <h5 style="color: var(--primary-blue); margin-bottom: 0.5rem;">
+                            <i class="fas fa-lightbulb"></i> Typical Load Values
+                        </h5>
+                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--medium-grey); font-size: 0.875rem;">
+                            <li><strong>Residential:</strong> G = 3.5-5.0 kN/m², Q = 1.5-2.0 kN/m²</li>
+                            <li><strong>Office:</strong> G = 4.0-6.0 kN/m², Q = 2.5-3.0 kN/m²</li>
+                            <li><strong>Commercial:</strong> G = 5.0-7.0 kN/m², Q = 3.0-5.0 kN/m²</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
